@@ -1,0 +1,18 @@
+# Materiais e anotações internas
+infos/
+
+# Caches de execução do Python e Jupyter
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Ambientes virtuais locais
+.venv/
+venv/
+env/
+
+# Configurações de IDE e SO
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
