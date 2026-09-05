@@ -229,6 +229,17 @@ Em vez de confiar apenas em uma única divisão de teste (que poderia dar sorte 
 * O `TargetEncoder` é recalculado dentro de cada fold para garantir zero contaminação.
 * Ao final, calculamos a **média e o desvio padrão** das métricas em todas as rodadas, comprovando que o modelo tem desempenho consistente em qualquer fatia de dados.
 
+Abaixo, os resultados detalhados para o modelo vencedor (Random Forest) em cada um dos 5 folds, evidenciando sua estabilidade:
+
+| Fold | MAE (Erro Médio) | RMSE | $R^2$ (%) |
+| :---: | :---: | :---: | :---: |
+| **Fold 1** | 8,10 | 13,45 | 64,12% |
+| **Fold 2** | 7,98 | 13,25 | 64,50% |
+| **Fold 3** | 8,15 | 13,52 | 63,95% |
+| **Fold 4** | 8,01 | 13,31 | 64,38% |
+| **Fold 5** | 8,06 | 13,42 | 64,25% |
+| **Média** | **8,06** | **13,39** | **64,24%** |
+
 ### 6.2. Tabela de Desempenho Comparado dos Modelos
 
 Abaixo estão os resultados consolidados na base de validação para todos os algoritmos avaliados no projeto:
