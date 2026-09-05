@@ -22,10 +22,15 @@ Este projeto investiga os fatores determinantes para o sucesso e alcance de faix
 A organização do repositório segue as melhores práticas de projetos de Data Science e Machine Learning:
 
 ```text
-challenge-spotify/
+spotify-popularity-prediction/
 │
 ├── data/                               # Dados tabulares do projeto
 │   └── dataset.csv                     # Base de dados original (114k faixas do Spotify)
+│
+├── frontend/                           # Aplicação web React/Vite
+│   ├── public/                         # Assets estáticos
+│   ├── src/                            # Código fonte da interface
+│   └── package.json                    # Dependências NPM
 │
 ├── models/                             # Modelos serializados e checkpoints
 │   ├── .gitkeep                        # Controle de versão do diretório
@@ -38,7 +43,7 @@ challenge-spotify/
 ├── reports/                            # Documentação analítica e relatórios
 │   ├── Relatorio_Tecnico.md            # Relatório técnico do projeto em Markdown
 │   ├── Relatorio_Tecnico.pdf           # Relatório técnico exportado em PDF
-│   └── images/                         # Gráficos e visualizações exportadas
+│   └── plots/                          # Gráficos e visualizações exportadas
 │       ├── correlation_matrix.png
 │       ├── feature_importance.png
 │       ├── residuals_plot.png
@@ -46,9 +51,11 @@ challenge-spotify/
 │
 ├── .gitattributes                      # Configuração do Git LFS
 ├── .gitignore                          # Regras de exclusão do Git
-├── app.py                              # Script / aplicação inicial
+├── api.py                              # Backend API (FastAPI)
+├── app.py                              # Dashboard analítico (Streamlit)
 ├── LICENSE                             # Licença do projeto
-└── README.md                           # Documentação principal do projeto
+├── README.md                           # Documentação principal do projeto
+└── requirements.txt                    # Dependências do projeto (Python)
 ```
 
 > **Nota sobre o modelo treinado:** O artefato serializado do modelo (`modelo_rf.pkl`) é versionado no repositório utilizando **Git Large File Storage (Git LFS)** após compressão do arquivo, permitindo o versionamento e download de arquivos pesados diretamente pelo GitHub.
