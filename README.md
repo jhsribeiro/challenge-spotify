@@ -4,11 +4,11 @@
 
 ---
 
-## 📌 Visão Geral do Projeto
+## Visão Geral do Projeto
 
 Este projeto investiga os fatores determinantes para o sucesso e alcance de faixas musicais no ecossistema do Spotify. Utilizando técnicas avançadas de Engenharia de Features (*Target Encoding* com validação cruzada *Out-of-Fold* para mitigar *Data Leakage*) e modelos de Machine Learning (Random Forest, XGBoost, LightGBM e Regressão Linear), o motor estima o índice de popularidade de faixas musicais (0 a 100).
 
-### 🎯 Principais Descobertas
+### Principais Descobertas
 - **O peso do artista e gênero:** A análise de importância das variáveis (*Feature Importance*) revelou que o prestígio e tração histórica do artista e gênero concentram a maior fatia do poder preditivo (~65% combinados), enquanto as variáveis acústicas (dançabilidade, energia, volume, etc.) desempenham papel secundário e modulador.
 - **Melhor Modelo:** O **Random Forest Regressor** apresentou a melhor performance global:
   - **$R^2$ (Poder de Explicação):** ~64,24%
@@ -17,7 +17,7 @@ Este projeto investiga os fatores determinantes para o sucesso e alcance de faix
 
 ---
 
-## 📁 Estrutura do Diretório
+## Estrutura do Diretório
 
 A organização do repositório segue as melhores práticas de projetos de Data Science e Machine Learning:
 
@@ -27,18 +27,27 @@ challenge-spotify/
 ├── data/                               # Dados tabulares do projeto
 │   └── dataset.csv                     # Base de dados original (114k faixas do Spotify)
 │
-├── notebooks/                          # Jupyter Notebooks de experimentação e modelagem
-│   ├── spotify_popularity_prediction.ipynb   # Pipeline completo de EDA, validação e treino detalhado
-│   └── spotify_model_benchmark.ipynb         # Benchmark comparativo direto de todos os algoritmos
-│
 ├── models/                             # Modelos serializados e checkpoints
 │   ├── .gitkeep                        # Controle de versão do diretório
 │   └── modelo_rf.pkl                   # Modelo Random Forest (gerenciado via Git LFS)
 │
-├── reports/                            # Documentação analítica e relatórios
-│   └── Relatorio_Tecnico.md            # Relatório técnico do projeto
+├── notebooks/                          # Jupyter Notebooks de experimentação e modelagem
+│   ├── spotify_popularity_prediction.ipynb   # Pipeline completo de EDA, validação e treino detalhado
+│   └── spotify_model_benchmark.ipynb         # Benchmark comparativo direto de todos os algoritmos
 │
-├── .gitignore                          # Regras de exclusão do Git (ignora caches, checkpoints, etc.)
+├── reports/                            # Documentação analítica e relatórios
+│   ├── Relatorio_Tecnico.md            # Relatório técnico do projeto em Markdown
+│   ├── Relatorio_Tecnico.pdf           # Relatório técnico exportado em PDF
+│   └── images/                         # Gráficos e visualizações exportadas
+│       ├── correlation_matrix.png
+│       ├── feature_importance.png
+│       ├── residuals_plot.png
+│       └── target_distribution.png
+│
+├── .gitattributes                      # Configuração do Git LFS
+├── .gitignore                          # Regras de exclusão do Git
+├── app.py                              # Script / aplicação inicial
+├── LICENSE                             # Licença do projeto
 └── README.md                           # Documentação principal do projeto
 ```
 
@@ -46,17 +55,32 @@ challenge-spotify/
 
 ---
 
-## 🚀 Como Executar o Projeto
+## Como Executar o Projeto
 
 ### 1. Pré-requisitos
-Certifique-se de possuir Python 3.9+ e o [Git LFS](https://git-lfs.github.com/) instalados em sua máquina.
+* **Python 3.9+**
+* **Git Large File Storage (Git LFS)**: Para clonar o repositório e obter o arquivo do modelo treinado (`models/modelo_rf.pkl`), é **obrigatório ter o Git LFS instalado** no seu sistema antes da clonagem.
+  * [Download oficial do Git LFS](https://git-lfs.com/)
+  * Comandos de instalação rápida:
+    * **Windows:** Baixe o instalador no site oficial ou use `winget install GitHub.GitLFS`
+    * **Linux (Ubuntu/Debian):** `sudo apt install git-lfs`
+    * **macOS:** `brew install git-lfs`
+  * Após a instalação, inicialize o LFS no seu terminal (necessário apenas uma vez):
+    ```bash
+    git lfs install
+    ```
 
-### 2. Clonagem e Download dos Modelos (Git LFS)
-Ao clonar o repositório, utilize o Git LFS para baixar o arquivo do modelo serializado:
+### 2. Clonagem do Repositório e Download dos Arquivos (Git LFS)
+> **Importante:** Se você clonar o projeto sem o Git LFS instalado, o arquivo `modelo_rf.pkl` será baixado apenas como um ponteiro de texto de ~130 bytes e não como o binário real do modelo (~115 MB), causando erro ao tentar carregá-lo no Python.
+
+Com o Git LFS pronto, clone o repositório e baixe o modelo:
 
 ```bash
-git clone https://github.com/jhsribeiro/challenge-spotify.git
-cd challenge-spotify
+# 1. Clone o repositório
+git clone https://github.com/jhsribeiro/spotify-popularity-prediction.git
+cd spotify-popularity-prediction
+
+# 2. Garanta o download do arquivo do modelo via LFS
 git lfs pull
 ```
 
@@ -84,7 +108,7 @@ Os notebooks estão configurados de forma resiliente para localizar automaticame
 
 ---
 
-## 📊 Modelos Comparados
+## Modelos Comparados
 
 | Modelo | MAE (Erro Médio) | RMSE | $R^2$ (Poder de Explicação) | $R^2$ (%) |
 | :--- | :---: | :---: | :---: | :---: |
@@ -95,3 +119,14 @@ Os notebooks estão configurados de forma resiliente para localizar automaticame
 | **Regressão Linear (Baseline)** | 9.69 | 14.62 | 0.5737 | 57.37% |
 
 Para detalhes completos de engenharia de atributos (Target Encoding e K-Fold), justificativa dos modelos e respostas às perguntas norteadoras, consulte o [Relatório Técnico](reports/Relatorio_Tecnico.md).
+
+---
+
+## Desenvolvedores
+
+* **Jhiovana Ribeiro**
+* **Cauan Soares**
+* **Larissa Giffoni**
+* **Marcos Bittar**
+* **Pedro Henrique de Sousa**
+

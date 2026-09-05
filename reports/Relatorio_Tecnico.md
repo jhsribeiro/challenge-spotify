@@ -1,10 +1,34 @@
 # Relatório Técnico: Motor de Predição de Popularidade Musical com Machine Learning
 
-**Projeto:** Motor de Predição de Popularidade Musical no Spotify  
-**Contexto:** Nano Challenge de Análise de Dados — *Challenge Based Learning* (CBL)  
-**Programa:** TIC em Trilhas | **Execução:** Instituto Eldorado  
-**Parceria:** Universidade de Brasília (UnB) & Lab Livre | **Coordenação:** Softex | **Apoio:** MCTI  
-**Área de Concentração:** Ciência de Dados, Engenharia de Features e Sistemas de Machine Learning  
+> **Projeto:** Motor de Predição de Popularidade Musical no Spotify  
+> **Contexto:** Nano-Challenge: Spotify Dataset  
+> **Programa:** Residência em IA | **Execução:** Instituto Eldorado  
+> **Parceria:** Universidade de Brasília (UnB) & Lab Livre | **Coordenação:** Softex | **Apoio:** MCTI  
+> **Área de Concentração:** Ciência de Dados, Engenharia de Features e Sistemas de Machine Learning  
+
+**Equipe:**  
+* Jhiovana Ribeiro  
+* Cauan Soares  
+* Larissa Giffoni  
+* Marcos Bittar  
+* Pedro Henrique de Sousa  
+
+**Repositório:** [jhsribeiro/spotify-popularity-prediction](https://github.com/jhsribeiro/spotify-popularity-prediction)
+
+---
+
+## Sumário
+- [Resumo Executivo](#resumo-executivo)
+- [1. Contexto de Negócio e Objetivos](#1-contexto-de-negócio-e-objetivos)
+- [2. Entendimento dos Dados](#2-entendimento-dos-dados)
+- [3. Preparação dos Dados e Engenharia de Features](#3-preparação-dos-dados-e-engenharia-de-features)
+- [4. Respostas às Guiding Questions](#4-respostas-às-guiding-questions)
+- [5. Escolha e Funcionamento do Random Forest](#5-escolha-e-funcionamento-do-random-forest)
+- [6. Validação Cruzada K-Fold e Comparação dos Modelos](#6-validação-cruzada-k-fold-e-comparação-dos-modelos)
+- [7. O que Realmente Importa: Análise de Importância das Features](#7-o-que-realmente-importa-análise-de-importância-das-features)
+- [8. Arquitetura Proposta para Produção](#8-arquitetura-proposta-para-produção)
+- [9. Visualizações Gráficas](#9-visualizações-gráficas)
+- [10. Conclusão](#10-conclusão)
 
 ---
 
@@ -34,7 +58,7 @@ O desafio central deste projeto, guiado pela metodologia *Challenge Based Learni
 2. **Engenharia de Features sem Data Leakage:** Implementar **Target Encoding** com particionamento **Out-Of-Fold (K-Fold)** para transformar artistas e gêneros em pesos numéricos reais sem sobreajuste (*overfitting*).
 3. **Responder às Perguntas Norteadoras (*Guiding Questions*):** Apresentar respostas diretas e embasadas nos dados para as 7 perguntas centrais do desafio.
 4. **Treinar e Justificar o Modelo Vencedor:** Comparar diferentes algoritmos e justificar a escolha do **Random Forest Regressor**, validando-o com **K-Fold Cross-Validation**.
-5. **Estruturar a Arquitetura de Produção:** Desenhar o fluxo prático de engenharia para colocar o modelo em operação contínua (Python/Scikit-Learn $\rightarrow$ PostgreSQL $\rightarrow$ API REST em Node.js).
+5. **Estruturar a Arquitetura de Produção:** Desenhar e implementar o fluxo prático de engenharia para colocar o modelo em operação contínua, combinando um backend em **FastAPI (Python)** e um frontend interativo em **React (Vite)**.
 
 ---
 
@@ -123,28 +147,64 @@ Para resolver isso de forma blindada, usamos o fatiamento em blocos cruzados (**
 Com base nas análises exploratórias, no comportamento das variáveis e no modelo preditivo, respondemos às perguntas norteadoras do desafio:
 
 ### GQ 1: Quais características musicais estão mais relacionadas à popularidade de uma música?
-> **Resposta:** O fator decisivo para a popularidade é o **artista** (`artist_encoded`, 56,57% de importância) e o **gênero** (`genre_encoded`, 8,93%). Entre os atributos de áudio, os que mais pesam são `tempo` (BPM), `speechiness` (presença de voz) e `loudness` (volume). Além disso, a `instrumentalness` tem forte impacto negativo: músicas puramente instrumentais raramente atingem o grande público pop.
+> **Resposta:** As variáveis mais determinantes são, de forma ampla, o histórico do artista e o gênero (responsáveis por mais de 65% da importância preditiva). Dentre as características estritamente sonoras, tempo, speechiness (presença de voz) e loudness (volume) são as que apresentam maior influência nas estimativas do modelo.
+> **Evidência:** A Análise de Importância de Features do Random Forest aponta `artist_encoded` (56,57%) e `genre_encoded` (8,93%), seguidas por `tempo` (3,49%), `speechiness` (3,47%) e `loudness` (3,41%).
 
 ### GQ 2: Músicas populares possuem um perfil sonoro diferente das músicas menos populares?
-> **Resposta:** **Sim.** As músicas do topo do ranking ($Popularity > 60$) apresentam padrões bem definidos:
-> 1. Presença marcante de vocais (índice quase nulo de trechos instrumentais prolongados).
-> 2. Volume acústico elevado e comprimido (`loudness` entre $-5$ dB e $-7$ dB, seguindo o padrão das grandes produções comerciais).
-> 3. Duração concentrada e objetiva (a imensa maioria dura entre 2,5 e 3,5 minutos).
+> **Resposta:** Sim. As faixas do topo do ranking ($Popularity > 60$) apresentam padrões definidos: presença marcante de vocais (índice quase nulo de faixas puramente instrumentais), volume acústico elevado e comprimido, e duração concentrada entre 2,5 e 3,5 minutos.
+> **Evidência:** O perfil sonoro dominante das faixas de alta popularidade revela baixa instrumentalidade e alto volume comercial (loudness concentrado entre -5 dB e -7 dB).
 
 ### GQ 3: Músicas mais dançantes tendem a ser mais populares?
-> **Resposta:** **Não necessariamente de forma causal.** A correlação direta entre dançabilidade e popularidade é quase nula ($r = +0,035$). A dançabilidade é um **requisito básico de entrada** para gêneros como Pop, Funk e Reggaeton, mas não é garantia de sucesso: existem milhares de músicas extremamente dançantes na plataforma com popularidade zero.
+> **Resposta:** Não existe forte relação causal global. A dançabilidade atua como requisito básico de entrada para determinados gêneros, mas seu baixo peso no modelo comprova que ela, isoladamente, não garante sucesso (milhares de músicas altamente dançantes possuem popularidade próxima a zero).
+> **Evidência:** A correlação de Pearson de dançabilidade com popularidade é quase nula ($r = +0,035$) e a importância no modelo é de apenas 3,30%.
 
 ### GQ 4: Músicas com maior energia tendem a ser mais populares?
-> **Resposta:** **Não.** O coeficiente de correlação foi praticamente zero ($r = +0,001$). Faixas super enérgicas e barulhentas (como Heavy Metal e Hardcore Eletrônico) têm públicos nichados e popularidade média modesta, enquanto faixas calmas, acústicas e intimistas frequentemente lideram as paradas globais. A energia define a proposta da música, não seu sucesso comercial.
+> **Resposta:** Não. A energia possui correlação estatística nula com a nota de popularidade. A análise evidencia que o parâmetro de energia ajuda a delimitar o gênero e a proposta da música, mas não eleva, isoladamente, o sucesso comercial (faixas calmas e acústicas também atingem popularidade global).
+> **Evidência:** Coeficiente de correlação ($r = +0,001$) estatisticamente quase nulo e baixa importância relativa preditiva (2,85%).
 
 ### GQ 5: A popularidade do artista influencia a popularidade de suas músicas?
-> **Resposta:** **Sim, de forma determinante e esmagadora.** A variável do artista concentrou **56,57% de toda a importância** no modelo preditivo. Sem a informação do artista, modelos treinados apenas com áudio não conseguem passar de $R^2 \approx 0,25$. Com o histórico do artista, o poder preditivo salta para **64,24%**. A base de fãs, a marca e o alcance promocional do artista são o verdadeiro motor da popularidade.
+> **Resposta:** Sim, de forma determinante. O histórico do artista, mensurado com base em Target Encoding, provou ser o motor central do modelo. Sem a presença da marca consolidada e base de fãs do artista, a previsibilidade a partir de áudio puramente isolado ficaria gravemente comprometida.
+> **Evidência:** O modelo Random Forest aponta que `artist_encoded` concentra a vasta maioria do poder preditivo (56,57% de Feature Importance).
 
 ### GQ 6: A relação entre características musicais e popularidade muda de acordo com o gênero?
-> **Resposta:** **Sim, completamente.** O que é sinônimo de sucesso em um gênero pode ser rejeitado em outro. No Pop e no Hip-Hop, o público espera volume alto, batida forte e vocais em destaque. No Jazz ou na Música Clássica, volume alto e batidas eletrônicas geram rejeição, sendo valorizadas a fidelidade acústica e a dinâmica instrumental. O gênero funciona como o filtro que dita as regras do jogo.
+> **Resposta:** Sim. O peso e as métricas acústicas de sucesso (como loudness e batidas fortes) mudam sob a ótica do gênero. A forte importância do gênero no modelo indica que as expectativas sonoras do público são altamente dependentes da categoria musical da faixa.
+> **Evidência:** O impacto das variáveis sonoras sofre controle da feature `genre_encoded`, que é a segunda feature mais importante (8,93%).
 
 ### GQ 7: É possível prever se uma música será um hit usando características musicais?
-> **Resposta:** **É possível prever a faixa de popularidade com boa precisão média, mas não com certeza absoluta.** Nosso modelo acerta a popularidade com uma margem de erro média de apenas **8,06 pontos** na escala de 0 a 100 e explica quase dois terços do fenômeno ($R^2 = 64,24\%$). A parcela que o modelo não consegue prever (~35%) deve-se a fatores imprevisíveis do mundo real: virais em redes sociais (TikTok), verbas de marketing de gravadoras e o gosto imprevisível do público.
+> **Resposta:** É possível estimar a faixa de popularidade com boa precisão média, explicando quase dois terços do fenômeno. Os aproximadamente 35% de erro restante indicam a presença de influências mercadológicas e sociais externas, imprevisíveis apenas com os dados fornecidos.
+> **Evidência:** O modelo otimizado Random Forest atinge um erro médio absoluto (MAE) de apenas 8,06 pontos (escala de 0 a 100) e explica 64,24% ($R^2$) da variação de popularidade.
+
+### GQ 8: Como os valores zerados/ausentes na variável de popularidade afetam a previsão?
+> **Resposta:** A variável alvo (popularidade) possui uma grande quantidade de valores zerados (fenômeno *zero-inflated*). Modelos de regressão padrão têm dificuldade em prever exatamente 0 em massa. Em vez disso, geram previsões contínuas muito baixas (mas maiores que zero), o que aumenta a margem de erro (resíduos) na cauda inferior, prejudicando o ajuste perfeito do modelo.
+> **Evidência:** A assimetria e concentração anormal de notas zero na distribuição original de `popularity` versus as predições contínuas do Random Forest.
+
+### GQ 9: Qual algoritmo de Machine Learning demonstrou melhor desempenho preditivo neste cenário e por quê?
+> **Resposta:** O Random Forest Regressor demonstrou desempenho superior pois seu mecanismo baseado em inúmeras árvores e votos aleatórios conseguiu capturar as complexas relações não lineares das variáveis de áudio. Ademais, ele obteve maior imunidade ao overfitting se comparado aos demais avaliados.
+> **Evidência:** O Random Forest (Bagging) obteve MAE de 8,06 e $R^2$ de 64,24%, com menor raiz do erro quadrático médio (RMSE = 13,39) comparado ao baseline Linear e aos Boostings (XGBoost, LightGBM).
+
+### GQ 10: Como a engenharia de dados impediu o "Data Leakage" (vazamento de dados) ao analisar o histórico dos artistas?
+> **Resposta:** Ao particionar a base em cinco blocos independentes, o peso histórico do artista em uma música específica é calculado estritamente sobre suas faixas localizadas nos demais quatro blocos. Dessa forma, o algoritmo extrai tendências globais do artista sem utilizar a própria faixa, forçando a generalização.
+> **Evidência:** Utilização da técnica Target Encoding Out-Of-Fold, dividindo o treino em 5 blocos (K-Fold K=5).
+
+### GQ 11: O tempo de duração de uma música (`duration_ms`) é um fator determinante para seu alcance massivo?
+> **Resposta:** Não de forma isolada e definitiva. Ainda que as músicas populares concentrem o padrão entre 2,5 e 3,5 minutos, a métrica serve apenas de papel complementar ao som, sendo uma moduladora coadjuvante da experiência (compatibilidade temporal das rádios e streamings).
+> **Evidência:** No Random Forest, a variável `duration_ms` apresentou uma importância relativa moderada de 3,27%.
+
+### GQ 12: Músicas com predomínio instrumental enfrentam maior barreira comercial em comparação a músicas com vocais explícitos?
+> **Resposta:** Sim. O conjunto de dados reforça a dificuldade comercial das faixas sem vocais para o catálogo e popularidade gerais de "mass market". A falta de instrumentais consolida que o apelo de massa exige o vocal cantado, deixando os instrumentais relegados a nichos bem delimitados.
+> **Evidência:** O parâmetro `instrumentalness` possui a menor relevância preditiva no modelo (2,42%) em conjunto a uma notável ausência no perfil macro do topo de ranking (músicas populares não demonstram alta instrumentalidade).
+
+### GQ 13: Qual o salto de precisão trazido pelos modelos ensemble em comparação ao modelo de baseline matemático tradicional (Regressão Linear)?
+> **Resposta:** Ocorreu um ganho substancial em capturar padrões. A Regressão Linear falha na captura de combinações lógicas (como a intersecção de gênero, artista e BPM), e o modelo de ensamble conseguiu entender que o sucesso se dá pela sinergia (interação combinada) destas variáveis, e não pela regressão em linhas estáticas separadas.
+> **Evidência:** A Regressão Linear conseguiu explicar apenas 57,37% da variância ($R^2$) com um erro médio (MAE) de 9,69; enquanto o Random Forest obteve $R^2$ de 64,24% e MAE de 8,06.
+
+### GQ 14: Existem fatores determinantes de popularidade que são invisíveis aos parâmetros técnico-musicais fornecidos pelo Spotify?
+> **Resposta:** Certamente. A limitação na captura final de variância reflete fatores do ecossistema extrínseco. Orçamentos de marketing de selos de gravadoras, impacto de dancinhas (Tiktok), hype socioculturais ou mesmo o apoio à curadoria da plataforma definem esse percentual fantasma do fenômeno que a Inteligência Artificial, limitada ao áudio e base quantitativa do Spotify, não captura.
+> **Evidência:** O melhor $R^2$ obtido pela base de dados estática tangenciou os 64%, sugerindo matematicamente a presença de aproximadamente 36% da variância total como inexplicada pelo modelo de IA.
+
+### GQ 15: Por que o modelo explica apenas 64% da variação de popularidade?
+> **Resposta:** Esse limite explicativo ocorre pela combinação da natureza da distribuição de popularidade (o excesso de zeros discutido na GQ 8, que aumenta o erro basal do modelo) somada aos fatores sociais e de mercado externos aos dados de áudio fornecidos. Dessa forma, 64% de poder explicativo representa um teto consideravelmente alto para variáveis estritamente técnico-musicais.
+> **Evidência:** O teto de $R^2$ de 64,24% no modelo Random Forest validado via validação cruzada, cruzado com as observações da distribuição de dados e impacto mercadológico.
 
 ---
 
@@ -181,7 +241,7 @@ Abaixo estão os resultados consolidados na base de validação para todos os al
 | **Árvore de Decisão** | 8,80 pts | 14,42 pts | 0,5848 | 58,48% | ~0,6 s |
 | **Regressão Linear (Baseline)** | 9,69 pts | 14,62 pts | 0,5737 | 57,37% | ~0,04 s |
 
-> 💡 **Interpretação das Métricas:**
+> **Interpretação das Métricas:**
 > * **MAE (Erro Médio Absoluto):** O Random Forest erra, em média, apenas **8 pontos** na nota da música (de 0 a 100).
 > * **RMSE (Raiz do Erro Quadrático):** Mede a penalidade para erros graves. O Random Forest obteve o menor valor (13,39), demonstrando que é o modelo mais estável e que menos comete erros absurdos.
 > * **$R^2$ (Poder Explicativo):** Com **64,24%**, o Random Forest superou todas as alternativas e foi consagrado como o modelo definitivo do projeto.
@@ -225,20 +285,42 @@ flowchart LR
     SpotifyAPI["1. Spotify Web API\nExtração de Metadados"] --> DataClean["2. Pipeline de Sanitização\nPython / Pandas"]
     DataClean --> FeatureStore["3. Feature Store\nTarget Encoding"]
     FeatureStore --> Model["4. Modelo Serializado\nmodelo_rf.pkl"]
-    Model --> Backend["5. Microsserviço API\nNode.js / Express"]
-    DB[(PostgreSQL\nHistórico e Métricas)] <--> Backend
-    Backend --> Client["6. Selos / Usuários\nDashboard B2B / Webhook"]
+    Model --> Backend["5. API de Predição\nFastAPI (Python)"]
+    Backend --> Client["6. Interface Web\nReact / Vite"]
 ```
 
 ### Componentes Práticos:
-1. **Camada de Machine Learning (Python / Scikit-Learn):** Executa o pipeline de treino, calcula os folds, gera o `modelo_rf.pkl` e exporta a tabela de médias de artistas e gêneros.
-2. **Banco de Dados Relacional (PostgreSQL):** Armazena as faixas cadastradas, o histórico de notas dos artistas e os logs de predições realizadas para fins de auditoria.
-3. **API REST em Node.js:** Microsserviço leve que recebe o JSON de uma nova música, consulta o peso do artista/gênero no banco e retorna a predição em menos de 50 milissegundos.
-4. **Proteção contra Falhas:** Caso a música seja de um artista estreante, o sistema aplica automaticamente a média global (`33,27`), garantindo que a API nunca falhe ou retorne erro.
+1. **Camada de Machine Learning (Python / Scikit-Learn):** Executa o pipeline de treino, calcula os folds, gera o `modelo_rf.pkl` e exporta a base original para extração das médias de artistas e gêneros.
+2. **Armazenamento de Features (CSV / Memória):** Os dados de Target Encoding extraídos de `dataset.csv` são carregados dinamicamente na inicialização da aplicação para traduzir textos em features numéricas.
+3. **Backend API (FastAPI):** Microsserviço assíncrono e leve em Python que recebe as requisições, aplica a transformação usando os dicionários de médias (Target Encoding) e aciona o modelo treinado para gerar a predição da popularidade instantaneamente.
+4. **Interface de Usuário (Frontend React/Vite):** Uma aplicação SPA (Single Page Application) que substitui protótipos estáticos ou interfaces baseadas em Streamlit, oferecendo uma experiência de usuário (UX) rica e dinâmica que interage em tempo real via chamadas HTTP (POST) com o backend FastAPI.
+5. **Proteção contra Falhas:** Caso a música seja de um artista estreante, o sistema no backend aplica automaticamente a média global (`33,27`), garantindo que a API nunca falhe ou retorne erro.
 
 ---
 
-## 9. Conclusão
+## 9. Visualizações Gráficas
+
+Abaixo estão os principais gráficos gerados durante a Análise Exploratória de Dados e avaliação do modelo:
+
+### 1. Distribuição da Variável Target (Popularidade)
+Mostra a alta concentração de músicas com popularidade zero.
+![Distribuição de Popularidade](plots/target_distribution.png)
+
+### 2. Matriz de Correlação
+Revela as interações numéricas diretas entre as variáveis sonoras.
+![Matriz de Correlação](plots/correlation_matrix.png)
+
+### 3. Importância das Variáveis (Feature Importance)
+Evidencia o peso dominante do artista frente às características de áudio no modelo Random Forest.
+![Feature Importance](plots/feature_importance.png)
+
+### 4. Gráfico de Resíduos (Erro do Modelo)
+Apresenta a diferença entre os valores previstos pelo modelo e a popularidade real.
+![Gráfico de Resíduos](plots/residuals_plot.png)
+
+---
+
+## 10. Conclusão
 
 O projeto comprovou com rigor metodológico que a popularidade de músicas no Spotify **pode ser estimada com alta acurácia por meio de Machine Learning**:
 * O **Random Forest Regressor** foi o modelo campeão, atingindo **MAE = 8,06 pontos** e **$R^2 = 64,24\%$**.
